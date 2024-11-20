@@ -140,3 +140,9 @@ package-lock.json
 
 #files
 *.pdf
+*.zip
+*.rar
+*.tar
+*.gz
+*.bz2
+*.7z
