@@ -19,13 +19,12 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const result = await response.json();
 
     if (response.ok) {
-      window.location.href = "/dashboard.html";
+      window.location.href =
+        result.role === "manager" ? "/employees.html" : "/profile.html";
     } else {
-      const errorDiv = document.getElementById("error-message");
-      errorDiv.textContent = result.error || "Login failed";
-      errorDiv.classList.remove("d-none");
+      alert(result.error || "Login failed");
     }
   } catch (error) {
-    console.error("Error:", error);
+    alert("Login failed");
   }
 });
