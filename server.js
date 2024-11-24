@@ -33,8 +33,8 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Routes (we'll add these later)
-// app.use('/auth', require('./routes/auth'));
-// app.use('/employee', require('./routes/employee'));
+app.use("/auth", require("./routes/auth"));
+app.use("/employee", require("./routes/employee"));
 
 // Basic route
 app.get("/", (req, res) => {
