@@ -1,11 +1,8 @@
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const formData = new FormData(e.target);
-  const data = {
-    email: formData.get("email"),
-    password: formData.get("password"),
-  };
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   try {
     const response = await fetch("/auth/login", {
@@ -13,18 +10,42 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ email, password }),
     });
 
-    const result = await response.json();
+    const data = await response.json();
 
     if (response.ok) {
-      window.location.href =
-        result.role === "manager" ? "/employees.html" : "/profile.html";
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userRole", data.role);
+      localStorage.setItem("userName", data.name);
+      window.location.href = "/dashboard.html";
     } else {
-      alert(result.error || "Login failed");
+      alert(data.error || "Login failed");
     }
   } catch (error) {
+    console.error("Error:", error);
     alert("Login failed");
   }
 });
+
+async function login(email, password) {
+  try {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userRole", data.role);
+      window.location.href = "/dashboard.html";
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (error) {
+    alert(error.message);
+  }
+}

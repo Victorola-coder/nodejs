@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 // Middleware to check if user is already logged in
@@ -25,11 +26,17 @@ router.post("/login", redirectIfAuthenticated, async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Set session
-    req.session.userId = user._id;
-    req.session.userRole = user.role;
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
-    res.json({ role: user.role });
+    res.json({
+      token,
+      role: user.role,
+      name: user.name,
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: "Server error" });

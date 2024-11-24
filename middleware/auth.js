@@ -1,28 +1,24 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
 
-exports.isAuthenticated = async (req, res, next) => {
+const isAuthenticated = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
   try {
-    if (!req.session.userId) {
-      return res.redirect("/login");
-    }
-    const user = await User.findById(req.session.userId);
-    if (!user) {
-      return res.redirect("/login");
-    }
-    req.user = user;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
     next();
   } catch (error) {
-    res.redirect("/login");
+    res.status(401).json({ error: "Invalid token" });
   }
 };
 
-exports.isManager = async (req, res, next) => {
-  if (req.user && req.user.role === "manager") {
-    next();
-  } else {
-    res
-      .status(403)
-      .render("error", { message: "Access denied. Managers only." });
+const isManager = (req, res, next) => {
+  if (req.user.role !== "manager") {
+    return res.status(403).json({ error: "Access denied" });
   }
+  next();
 };
+
+module.exports = { isAuthenticated, isManager };

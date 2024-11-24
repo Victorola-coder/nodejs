@@ -11,17 +11,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  fullName: {
+  role: {
+    type: String,
+    enum: ["manager", "normal"],
+    default: "normal",
+  },
+  name: {
     type: String,
     required: true,
   },
-  role: {
-    type: String,
-    enum: ["manager", "employee"],
-    default: "employee",
-  },
-  department: String,
   position: String,
+  department: String,
 });
 
 userSchema.pre("save", async function (next) {
