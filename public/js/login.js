@@ -1,8 +1,8 @@
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const formData = new FormData(e.target);
+  const credentials = Object.fromEntries(formData.entries());
 
   try {
     const response = await fetch("/auth/login", {
@@ -10,7 +10,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(credentials),
     });
 
     const data = await response.json();
@@ -18,14 +18,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     if (response.ok) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("userRole", data.role);
-      localStorage.setItem("userName", data.name);
-      window.location.href = "/dashboard.html";
+      window.location.href =
+        data.role === "manager" ? "/dashboard.html" : "/profile.html";
     } else {
-      alert(data.error || "Login failed");
+      throw new Error(data.message || "Login failed");
     }
   } catch (error) {
-    console.error("Error:", error);
-    alert("Login failed");
+    alert(error.message);
   }
 });
 

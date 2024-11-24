@@ -1,65 +1,63 @@
 const express = require("express");
 const router = express.Router();
-const { isAuthenticated, isManager } = require("../middleware/auth");
 const User = require("../models/User");
+const auth = require("../middleware/auth");
+const { isManager } = require("../middleware/roleCheck");
 
-// Get all employees (manager only)
-router.get("/list", isAuthenticated, isManager, async (req, res) => {
+// Get all employees (managers only)
+router.get("/list", auth, isManager, async (req, res) => {
   try {
     const employees = await User.find({ role: "normal" })
-      .select("-password -__v")
+      .select("-password")
       .sort({ name: 1 });
     res.json(employees);
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// Get own profile
-router.get("/profile", isAuthenticated, async (req, res) => {
+// Add new employee (managers only)
+router.post("/add", auth, isManager, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password -__v");
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
+    const { email, password, name, position, department } = req.body;
 
-// Update own profile
-router.put("/profile", isAuthenticated, async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: req.body },
-      { new: true }
-    ).select("-password -__v");
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
 
-// Add new employee (manager only)
-router.post("/add", isAuthenticated, isManager, async (req, res) => {
-  try {
-    const newUser = new User({
-      ...req.body,
+    const user = new User({
+      email,
+      password,
+      name,
+      position,
+      department,
       role: "normal",
     });
-    await newUser.save();
-    res.json({ message: "Employee added successfully" });
+
+    await user.save();
+    res.status(201).json({ message: "Employee added successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// Delete employee (manager only)
-router.delete("/:id", isAuthenticated, isManager, async (req, res) => {
+// Update employee (managers only)
+router.put("/:id", auth, isManager, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "Employee deleted successfully" });
+    const employee = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    ).select("-password");
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    res.json(employee);
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 

@@ -2,59 +2,41 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const auth = require("../middleware/auth");
 
-// Middleware to check if user is already logged in
-const redirectIfAuthenticated = (req, res, next) => {
-  if (req.session.userId) {
-    return res.redirect("/profile.html");
+// Check authentication status
+router.get("/check", auth, async (req, res) => {
+  try {
+    res.json({
+      authenticated: true,
+      role: req.user.role,
+    });
+  } catch (error) {
+    res.status(401).json({ authenticated: false });
   }
-  next();
-};
+});
 
 // Login route
-router.post("/login", redirectIfAuthenticated, async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Basic validation
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
-
     const user = await User.findOne({ email });
+
     if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "24h",
+    });
 
     res.json({
       token,
       role: user.role,
-      name: user.name,
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
-});
-
-// Check auth status
-router.get("/check", (req, res) => {
-  res.json({
-    authenticated: !!req.session.userId,
-    role: req.session.userRole,
-  });
-});
-
-// Logout route
-router.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.json({ message: "Logged out successfully" });
 });
 
 module.exports = router;
