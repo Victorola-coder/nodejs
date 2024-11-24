@@ -14,13 +14,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// Set view engine
-app.set("view engine", "ejs");
-
 // Session configuration
 app.use(
   session({
-    secret: process.env.JWT_SECRET,
+    secret: process.env.JWT_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
   })
@@ -32,13 +29,13 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Routes (we'll add these later)
+// Routes
 app.use("/auth", require("./routes/auth"));
 app.use("/employee", require("./routes/employee"));
 
-// Basic route
+// Serve static HTML files
 app.get("/", (req, res) => {
-  res.render("login");
+  res.sendFile(__dirname + "/public/login.html");
 });
 
 // Start server
