@@ -3,21 +3,15 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const dotenv = require("dotenv");
 
-// Load environment variables
 dotenv.config();
-
-// Initialize express
 const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-
-// Session configuration
 app.use(
   session({
-    secret: process.env.JWT_SECRET || "your-secret-key",
+    secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,
   })
@@ -33,13 +27,12 @@ mongoose
 app.use("/auth", require("./routes/auth"));
 app.use("/employee", require("./routes/employee"));
 
-// Serve static HTML files
+// Default route
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/login.html");
+  res.redirect("/login.html");
 });
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

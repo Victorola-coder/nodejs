@@ -1,70 +1,55 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const { isAuthenticated } = require("../middleware/auth");
+const bcrypt = require("bcryptjs");
 
-// Login page
-router.get("/login", (req, res) => {
-  res.render("login");
-});
-
-// Register page
-router.get("/register", (req, res) => {
-  res.render("register");
-});
-
-// Login logic
+// Login route
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
 
+    // Find user
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.render("login", { error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.render("login", { error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    // Set session
     req.session.userId = user._id;
-    res.redirect("/dashboard");
-  } catch (error) {
-    res.render("login", { error: "Login failed" });
-  }
-});
+    req.session.userRole = user.role;
 
-// Register logic
-router.post("/register", async (req, res) => {
-  try {
-    const { email, password, fullName, role } = req.body;
-
-    // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.render("register", { error: "User already exists" });
-    }
-
-    // Create new user
-    user = new User({
-      email,
-      password,
-      fullName,
-      role: role || "employee",
+    res.json({
+      message: "Login successful",
+      role: user.role,
     });
-
-    await user.save();
-    res.redirect("/login");
   } catch (error) {
-    res.render("register", { error: "Registration failed" });
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// Logout
+// Logout route
 router.get("/logout", (req, res) => {
   req.session.destroy();
-  res.redirect("/login");
+  res.json({ message: "Logged out successfully" });
+});
+
+// Check auth status
+router.get("/check", (req, res) => {
+  if (req.session.userId) {
+    res.json({
+      authenticated: true,
+      role: req.session.userRole,
+    });
+  } else {
+    res.json({ authenticated: false });
+  }
 });
 
 module.exports = router;
