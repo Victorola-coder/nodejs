@@ -1,26 +1,43 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  // Load profile data
+// Check authentication on page load
+checkAuth();
+
+async function checkAuth() {
+  const response = await fetch("/auth/check");
+  const data = await response.json();
+
+  if (!data.authenticated) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  // Hide manager links for non-managers
+  if (data.role !== "manager") {
+    document
+      .querySelectorAll(".manager-only")
+      .forEach((el) => (el.style.display = "none"));
+  }
+
+  loadProfile();
+}
+
+async function loadProfile() {
   try {
     const response = await fetch("/employee/profile");
-    const data = await response.json();
+    const user = await response.json();
 
-    if (response.ok) {
-      document.getElementById("email").value = data.email;
-      document.getElementById("fullName").value = data.fullName;
-      document.getElementById("department").value = data.department || "";
-      document.getElementById("position").value = data.position || "";
-    } else {
-      alert("Failed to load profile");
-    }
+    document.getElementById("email").value = user.email;
+    document.getElementById("fullName").value = user.fullName;
+    document.getElementById("department").value = user.department || "";
+    document.getElementById("position").value = user.position || "";
   } catch (error) {
-    console.error("Error:", error);
+    alert("Failed to load profile");
   }
-});
+}
 
 document.getElementById("profileForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const formData = {
+  const data = {
     fullName: document.getElementById("fullName").value,
     department: document.getElementById("department").value,
     position: document.getElementById("position").value,
@@ -29,10 +46,8 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
   try {
     const response = await fetch("/employee/profile/update", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {
@@ -41,11 +56,11 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
       alert("Failed to update profile");
     }
   } catch (error) {
-    console.error("Error:", error);
+    alert("Failed to update profile");
   }
 });
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   await fetch("/auth/logout");
-  window.location.href = "/html/login.html";
+  window.location.href = "/login.html";
 });

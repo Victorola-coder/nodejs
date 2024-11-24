@@ -1,22 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
+
+// Middleware to check if user is already logged in
+const redirectIfAuthenticated = (req, res, next) => {
+  if (req.session.userId) {
+    return res.redirect("/profile.html");
+  }
+  next();
+};
 
 // Login route
-router.post("/login", async (req, res) => {
+router.post("/login", redirectIfAuthenticated, async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    // Basic validation
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // Check password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
@@ -24,32 +29,25 @@ router.post("/login", async (req, res) => {
     req.session.userId = user._id;
     req.session.userRole = user.role;
 
-    res.json({
-      message: "Login successful",
-      role: user.role,
-    });
+    res.json({ role: user.role });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+// Check auth status
+router.get("/check", (req, res) => {
+  res.json({
+    authenticated: !!req.session.userId,
+    role: req.session.userRole,
+  });
+});
+
 // Logout route
 router.get("/logout", (req, res) => {
   req.session.destroy();
   res.json({ message: "Logged out successfully" });
-});
-
-// Check auth status
-router.get("/check", (req, res) => {
-  if (req.session.userId) {
-    res.json({
-      authenticated: true,
-      role: req.session.userRole,
-    });
-  } else {
-    res.json({ authenticated: false });
-  }
 });
 
 module.exports = router;
