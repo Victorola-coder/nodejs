@@ -1,0 +1,62 @@
+<%- include('layout', { title: 'Profile' }) %>
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h4>Employee Profile</h4>
+      </div>
+      <div class="card-body">
+        <form action="/employee/profile/update" method="POST">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              value="<%= user.email %>"
+              readonly
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input
+              type="text"
+              name="fullName"
+              class="form-control"
+              value="<%= user.fullName %>"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Department</label>
+            <input
+              type="text"
+              name="department"
+              class="form-control"
+              value="<%= user.department || '' %>"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Position</label>
+            <input
+              type="text"
+              name="position"
+              class="form-control"
+              value="<%= user.position || '' %>"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <input
+              type="text"
+              class="form-control"
+              value="<%= user.role %>"
+              readonly
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

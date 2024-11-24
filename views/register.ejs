@@ -1,0 +1,41 @@
+<%- include('layout', { title: 'Register' }) %>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Register</div>
+      <div class="card-body">
+        <% if (locals.error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+        <form action="/auth/register" method="POST">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="fullName" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select name="role" class="form-control">
+              <option value="employee">Employee</option>
+              <option value="manager">Manager</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
