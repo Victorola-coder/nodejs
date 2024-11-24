@@ -11,23 +11,23 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  name: String,
-  position: String,
+  fullName: {
+    type: String,
+    required: true,
+  },
   department: String,
+  position: String,
   role: {
     type: String,
-    enum: ["normal", "manager"],
     default: "normal",
+    enum: ["normal", "manager"],
   },
 });
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 8);
+  next();
 });
-
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
 
 module.exports = mongoose.model("User", userSchema);

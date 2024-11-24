@@ -16,8 +16,8 @@ mongoose
   .catch((err) => console.log("MongoDB Connection Error:", err));
 
 // Routes
-app.use("/auth", require("./routes/auth"));
-app.use("/employee", require("./routes/employee"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/employees", require("./routes/employees"));
 
 // Serve static files
 app.get("*", (req, res) => {
