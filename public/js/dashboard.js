@@ -38,9 +38,12 @@ async function loadEmployees() {
                     <td>${emp.department || "-"}</td>
                     <td>${emp.position || "-"}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="editEmployee('${
-                          emp._id
-                        }')">Edit</button>
+                        <button class="btn btn-sm btn-primary" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editEmployeeModal" 
+                            data-employee-id="${emp._id}">
+                            Edit
+                        </button>
                         <button class="btn btn-sm btn-danger" onclick="deleteEmployee('${
                           emp._id
                         }')">Delete</button>
@@ -151,3 +154,73 @@ document.getElementById("logoutLink").addEventListener("click", async (e) => {
 
 // Initialize page
 checkAuth();
+
+// Handle edit employee modal
+document
+  .getElementById("editEmployeeModal")
+  .addEventListener("show.bs.modal", function (event) {
+    // Button that triggered the modal
+    const button = event.relatedTarget;
+    // Get the employee ID from data attribute
+    const employeeId = button.getAttribute("data-employee-id");
+
+    // Store the current employee ID for the save function
+    this.setAttribute("data-employee-id", employeeId);
+
+    // Fetch employee data and populate the form
+    fetch(`/employee/${employeeId}`)
+      .then((response) => response.json())
+      .then((employee) => {
+        document.getElementById("editEmployeeFullName").value =
+          employee.fullName;
+        document.getElementById("editEmployeeDepartment").value =
+          employee.department || "";
+        document.getElementById("editEmployeePosition").value =
+          employee.position || "";
+      })
+      .catch((error) => console.error("Error:", error));
+  });
+
+// Function to save employee edits
+function saveEmployeeEdit() {
+  const modal = document.getElementById("editEmployeeModal");
+  const employeeId = modal.getAttribute("data-employee-id");
+
+  const updatedData = {
+    fullName: document.getElementById("editEmployeeFullName").value,
+    department: document.getElementById("editEmployeeDepartment").value,
+    position: document.getElementById("editEmployeePosition").value,
+  };
+
+  fetch(`/employee/${employeeId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedData),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data._id) {
+        // Close modal
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        modalInstance.hide();
+        // Reload employee list
+        loadEmployees();
+      }
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+// Make functions globally available
+window.saveEmployeeEdit = saveEmployeeEdit;
+window.deleteEmployee = deleteEmployee;
+
+// Load employees when page loads (if user is manager)
+document.addEventListener("DOMContentLoaded", function () {
+  checkAuth().then(() => {
+    if (currentUser.role === "manager") {
+      loadEmployees();
+    }
+  });
+});
