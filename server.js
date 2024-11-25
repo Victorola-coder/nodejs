@@ -1,28 +1,30 @@
 require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
-const path = require("path");
+const connectDB = require("./config/db");
+const session = require("express-session");
 
 const app = express();
 
+// Connect Database
+connectDB();
+
 // Middleware
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log("MongoDB Connection Error:", err));
+// Set view engine
+app.set("view engine", "ejs");
 
 // Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/employees", require("./routes/employees"));
-
-// Serve static files
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+app.use("/auth", require("./routes/auth"));
+app.use("/employee", require("./routes/employee"));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
