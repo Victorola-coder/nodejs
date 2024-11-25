@@ -212,3 +212,10 @@ async function updateEmployee(event, id) {
     alert("Failed to update employee");
   }
 }
+
+function showAddModal() {
+  const modal = new bootstrap.Modal(
+    document.getElementById("addEmployeeModal")
+  );
+  modal.show();
+}
