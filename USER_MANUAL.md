@@ -1,22 +1,29 @@
 # Employee Management System - User Manual
 
-## 1. Web Server Deployment Instructions
+## Table of Contents
 
-### Prerequisites
+1. System Requirements
+2. Installation Guide
+3. Usage Instructions
+4. Troubleshooting
+5. Client Requirements Coverage
+
+## 1. System Requirements
 
 - Node.js (v14 or higher)
 - MongoDB (v4.4 or higher)
-- npm (Node Package Manager)
+- Modern web browser (Chrome, Firefox, Safari, or Edge)
 
-### Installation Steps
+## 2. Installation Guide
+
+### Web Server Deployment
 
 1. Clone or extract the project files
-2. Open terminal/command prompt in the project directory
-3. Install dependencies:
+2. Install dependencies:
 
-npm installx
+npm install
 
-4. Create `.env` file in root directory with:
+3. Create a `.env` file in the root directory with:
 
 ```
 MONGODB_URI=mongodb://localhost:27017/employee-management
@@ -24,80 +31,38 @@ JWT_SECRET=your_secret_key
 PORT=3000
 ```
 
-5. Start MongoDB server (see commands above)
-6. Start the application:
+4. Start MongoDB:
 
+```bash
+mongod
 ```
-npm start
+
+5. Start the server:
+
+```bash
+node server.js
 ```
 
-7. Access the application at: `http://localhost:3000`
+The server will run on `http://localhost:3000`
 
-## 2. Web Application Access Instructions
+## 3. Usage Instructions
 
-### Initial Setup
+### First-Time Setup
 
-- Default manager account:
-  - Email: manager@company.com
-  - Password: manager123
+1. Create the first manager account using API:
 
-### User Types and Access Levels:
+```bash
+curl -X POST http://localhost:3000/auth/register \
+-H "Content-Type: application/json" \
+-d '{
+    "email": "manager@company.com",
+    "password": "password123",
+    "fullName": "Admin Manager",
+    "role": "manager"
+}'
+```
 
-#### Normal Users (Employees):
-
-- Can log in with email/password
-- View their own profile
-- Edit their own profile information
-- Cannot access other employees' information
-
-#### Managers:
-
-- All employee capabilities plus:
-- View list of all employees
-- Add new employees
-- Edit employee information
-- Delete employees
-
-### Navigation Guide:
-
-1. Login Page (`/login`)
-
-   - Enter email and password
-   - Click "Login"
-
-2. Profile Page (`/employee/profile`)
-
-   - View personal information
-   - Edit profile details
-   - Save changes
-
-3. Employee List (Managers Only) (`/employee/list`)
-   - View all employees
-   - Add new employees
-   - Edit employee details
-   - Delete employees
-
-## 3. Requirements Implementation Status
-
-### Implemented Features ✅
-
-- Complete user authentication system
-- Role-based access control (Manager/Employee)
-- Employee profile management
-- Manager administrative capabilities
-- MongoDB data storage
-- Secure password handling
-- Session management
-
-### Security Features
-
-- Password hashing using bcrypt
-- Session-based authentication
-- Role-based access control
-- Input validation
-- Secure routes protection
-
-## 4. Troubleshooting Guide
+## 4. Troubleshooting
 
 ### Common Issues and Solutions
 
