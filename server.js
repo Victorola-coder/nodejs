@@ -26,5 +26,13 @@ app.set("view engine", "ejs");
 app.use("/auth", require("./routes/auth"));
 app.use("/employee", require("./routes/employee"));
 
+// Add this line after your middleware setup
+app.use(express.static("public"));
+
+// Add this route to redirect root to login
+app.get("/", (req, res) => {
+  res.redirect("/login.html");
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
